@@ -3,7 +3,6 @@ plugins {
     id 'maven-publish'
 }
 group = 'com.github.llmer'
-version = '1.0'
 
 android {
     namespace 'com.reeman.log'
@@ -30,7 +29,6 @@ android {
 }
 
 dependencies {
-
     api 'com.jakewharton.timber:timber:5.0.1'
     api 'com.elvishew:xlog:1.10.1'
 }
@@ -41,9 +39,9 @@ afterEvaluate {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.llmer'
+                groupId = 'com.reeman.log'
                 artifactId = 'mLog'
-                version = '1.0.1'
+                version = '1.0.3'
             }
         }
     }
