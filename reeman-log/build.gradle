@@ -47,22 +47,31 @@ task generateSourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier 'sources'
 }
-afterEvaluate {
-    publishing {
-        publications {
-            // 定义一个名为 Production 的发布
-            release(MavenPublication) {
-
-                groupId GROUP_ID
-                artifactId ARTIFACT_ID
-                version VERSION
-//             必须有这个 否则不会上传AAR包
-                afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
-                // 上传source，这样使用方可以看到方法注释
-                artifact generateSourcesJar
-//            artifact "$buildDir/outputs/aar/${project.getName()}-debug.aar" //要上传的aar路径
-            }
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = GROUP_ID
+            artifactId = ARTIFACT_ID
+            version = VERSION
         }
     }
 }
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            // 定义一个名为 Production 的发布
+//            release(MavenPublication) {
+//
+//                groupId GROUP_ID
+//                artifactId ARTIFACT_ID
+//                version VERSION
+////             必须有这个 否则不会上传AAR包
+//                afterEvaluate { artifact(tasks.getByName("bundleReleaseAar")) }
+//                // 上传source，这样使用方可以看到方法注释
+//                artifact generateSourcesJar
+////            artifact "$buildDir/outputs/aar/${project.getName()}-debug.aar" //要上传的aar路径
+//            }
+//        }
+//    }
+//}
 
