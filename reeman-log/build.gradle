@@ -10,7 +10,7 @@ android {
     defaultConfig {
         minSdkVersion 21
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
@@ -25,11 +25,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
-//    publishing {
-//        singleVariant("release")
-//        singleVariant("debug")
-//    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -51,8 +46,8 @@ afterEvaluate {
     publishing {
         publications {
             // Creates a Maven publication called "release".
-            group = 'com.github.llmer'
-            version = '1.0.7'
+            group = 'com.github.Misaka-XXXXII'
+            version = '1.0.0'
             //发布release版本
             release(MavenPublication) {
                 // Applies the component for the release build variant.
