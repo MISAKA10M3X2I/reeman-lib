@@ -1,15 +1,7 @@
 plugins {
     id 'com.android.library'
-    id 'kotlin-android'
     id 'maven-publish'
 }
-
-task generateSourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier 'sources'
-}
-
-group = 'com.github.llmer'
 
 android {
     namespace 'com.reeman.log'
@@ -28,52 +20,60 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        useIR = true
-        jvmTarget = '1.8'
-        freeCompilerArgs += ["-Xskip-prerelease-check"]
-    }
-    buildFeatures {
-        compose true
-    }
-
-    afterEvaluate {
-        publishing {
-            def versionName = "1.0.6"
-            publications {
-                // Creates a Maven publication called "release".
-                release(MavenPublication) {
-                    // Applies the component for the release build variant.
-                    from components.release
-
-                    // You can then customize attributes of the publication as shown below.
-                    groupId = 'com.github.llmer'
-                    artifactId = 'mLog'
-                    version = versionName
-                }
-            }
-            repositories {
-                maven {
-                    // change URLs to point to your repos, e.g. http://my.org/repo
-                    def baseUrl = buildDir.getParent()
-                    def releasesRepoUrl = "$baseUrl/repos/releases"
-                    def snapshotsRepoUrl = "$baseUrl/repos/snapshots"
-                    url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                }
-            }
+        debug{
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+//    publishing {
+//        singleVariant("release")
+//        singleVariant("debug")
+//    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+task generateSourcesJar(type: Jar){
+    from android.sourceSets.main.java.srcDirs
+    classifier  'sources'
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:"
     api 'com.jakewharton.timber:timber:5.0.1'
     api 'com.elvishew:xlog:1.10.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            group = 'com.github.llmer'
+            version = '1.0.7'
+            //发布release版本
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
+                //groupId通常是自己的gitee或者GitHub的账户地址
+                groupId = group
+                //artifactId通常是指待发布项目的名称，也就是别名
+                artifactId = 'mLog'
+                //version通常是指待发布项目的版本号，这里是写死的，通常我们取项目versionName
+                version = version
+            }
+            //发布debug版本
+            debug(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.debug
+                groupId = group
+                artifactId = 'mLog-debug'
+                version = version
+            }
+        }
+    }
 }
 
