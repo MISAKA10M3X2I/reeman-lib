@@ -22,23 +22,33 @@ public class FileLoggingTree extends Timber.Tree {
     private final String defaultTAG;
 
     private final int logLevel;
+
+    private final boolean withAndroidPrinter;
     private final Map<String, Printer> printerMap = new HashMap<>();
 
     private final Printer androidPrinter = new AndroidPrinter(true);
 
 
-    public FileLoggingTree(int priority,String rootPath, String tag, List<String> pathList) {
+    public FileLoggingTree(int priority,boolean withAndroidPrinter, String rootPath, String tag, List<String> pathList) {
         this.logLevel = priority;
         this.defaultTAG = tag;
+        this.withAndroidPrinter = withAndroidPrinter;
         for (String path : pathList) {
             printerMap.put(path, new FilePrinter
                     .Builder(rootPath + File.separator + path)
-                    .fileNameGenerator(new LogFileName(true))
+                    .fileNameGenerator(new LogFileName(false))
                     .backupStrategy(new NeverBackupStrategy())
                     .flattener(new ClassicFlattener())
                     .cleanStrategy(new FileLastModifiedCleanStrategy(7 * 24 * 60 * 60 * 1000))
                     .build());
         }
+    }
+
+    public FileLoggingTree(int priority,boolean withAndroidPrinter,  String tag, Map<String, Printer> printerMap) {
+        this.logLevel = priority;
+        this.defaultTAG = tag;
+        this.withAndroidPrinter = withAndroidPrinter;
+        this.printerMap.putAll(printerMap);
 
     }
 
@@ -51,9 +61,17 @@ public class FileLoggingTree extends Timber.Tree {
             return;
         }
         if (printerMap.containsKey(tag)) {
-            XLog.tag(tag).printers(androidPrinter, printerMap.get(tag)).log(priority, message, t);
+            if (withAndroidPrinter) {
+                XLog.tag(tag).printers(androidPrinter, printerMap.get(tag)).log(priority, message, t);
+            }else {
+                XLog.tag(tag).printers(printerMap.get(tag)).log(priority, message, t);
+            }
         } else {
-            XLog.tag(tag).printers(androidPrinter).log(priority, message, t);
+            if (withAndroidPrinter) {
+                XLog.tag(tag).printers(androidPrinter,printerMap.get(defaultTAG)).log(priority, message, t);
+            }else {
+                XLog.tag(tag).printers(printerMap.get(defaultTAG)).log(priority, message, t);
+            }
         }
     }
 }
