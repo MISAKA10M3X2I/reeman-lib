@@ -20,10 +20,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug{
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
     }
 
     compileOptions {
@@ -38,8 +34,8 @@ task generateSourcesJar(type: Jar){
 }
 
 dependencies {
-    implementation 'com.jakewharton.timber:timber:5.0.1'
-    implementation 'com.elvishew:xlog:1.10.1'
+    api 'com.jakewharton.timber:timber:5.0.1'
+    api 'com.elvishew:xlog:1.10.1'
 }
 
 afterEvaluate {
@@ -47,7 +43,7 @@ afterEvaluate {
         publications {
             // Creates a Maven publication called "release".
             group = 'com.github.Misaka-XXXXII'
-            version = '1.0.0'
+            version = '1.0.3'
             //发布release版本
             release(MavenPublication) {
                 // Applies the component for the release build variant.
@@ -57,14 +53,6 @@ afterEvaluate {
                 //artifactId通常是指待发布项目的名称，也就是别名
                 artifactId = 'mLog'
                 //version通常是指待发布项目的版本号，这里是写死的，通常我们取项目versionName
-                version = version
-            }
-            //发布debug版本
-            debug(MavenPublication) {
-                // Applies the component for the release build variant.
-                from components.debug
-                groupId = group
-                artifactId = 'mLog-debug'
                 version = version
             }
         }
