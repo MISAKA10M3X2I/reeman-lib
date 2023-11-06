@@ -1,5 +1,7 @@
 package com.reeman.log;
 
+import android.text.TextUtils;
+
 import com.elvishew.xlog.XLog;
 import com.elvishew.xlog.flattener.ClassicFlattener;
 import com.elvishew.xlog.printer.AndroidPrinter;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import timber.log.Timber;
 
@@ -28,8 +31,12 @@ public class FileLoggingTree extends Timber.Tree {
 
     private final Printer androidPrinter = new AndroidPrinter(true);
 
+    private Set<String> blockedTags;
 
-    public FileLoggingTree(int priority,boolean withAndroidPrinter, String rootPath, String tag, List<String> pathList) {
+    private Set<String> blackedMessages;
+
+
+    public FileLoggingTree(int priority, boolean withAndroidPrinter, String rootPath, String tag, List<String> pathList) {
         this.logLevel = priority;
         this.defaultTAG = tag;
         this.withAndroidPrinter = withAndroidPrinter;
@@ -44,12 +51,20 @@ public class FileLoggingTree extends Timber.Tree {
         }
     }
 
-    public FileLoggingTree(int priority,boolean withAndroidPrinter,  String tag, Map<String, Printer> printerMap) {
+    public FileLoggingTree(int priority, boolean withAndroidPrinter, String tag, Map<String, Printer> printerMap) {
         this.logLevel = priority;
         this.defaultTAG = tag;
         this.withAndroidPrinter = withAndroidPrinter;
         this.printerMap.putAll(printerMap);
 
+    }
+
+    public void setBlockedTags(Set<String> blockedTags) {
+        this.blockedTags = blockedTags;
+    }
+
+    public void setBlackedMessages(Set<String> blackedMessages) {
+        this.blackedMessages = blackedMessages;
     }
 
     @Override
@@ -60,18 +75,28 @@ public class FileLoggingTree extends Timber.Tree {
         if (priority < logLevel) {
             return;
         }
-        if (printerMap.containsKey(tag)) {
-            if (withAndroidPrinter) {
-                XLog.tag(tag).printers(androidPrinter, printerMap.get(tag)).log(priority, message, t);
-            }else {
-                XLog.tag(tag).printers(printerMap.get(tag)).log(priority, message, t);
-            }
+        if (!shouldLog(tag, message)) return;
+        Printer finalFilePrinter = printerMap.get(printerMap.containsKey(tag) ? tag : defaultTAG);
+        Printer[] printers;
+        if (withAndroidPrinter) {
+            printers = new Printer[]{androidPrinter, finalFilePrinter};
         } else {
-            if (withAndroidPrinter) {
-                XLog.tag(tag).printers(androidPrinter,printerMap.get(defaultTAG)).log(priority, message, t);
-            }else {
-                XLog.tag(tag).printers(printerMap.get(defaultTAG)).log(priority, message, t);
+            printers = new Printer[]{finalFilePrinter};
+        }
+        if (t == null){
+            XLog.tag(tag).printers(printers).log(priority, message);
+        }else {
+            XLog.tag(tag).printers(printers).log(priority, message, t);
+        }
+    }
+
+    private boolean shouldLog(String tag, String message) {
+        if (blockedTags != null && blockedTags.contains(tag)) return false;
+        if (blackedMessages != null && !TextUtils.isEmpty(message)) {
+            for (String blackedMessage : blackedMessages) {
+                if (message.contains(blackedMessage)) return false;
             }
         }
+        return true;
     }
 }

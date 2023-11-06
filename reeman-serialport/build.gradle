@@ -4,14 +4,13 @@ plugins {
 }
 
 android {
-    namespace 'com.reeman.log'
-    compileSdk 33
+    compileSdkVersion 33
+    namespace 'com.reeman.serialport'
 
     defaultConfig {
         minSdkVersion 21
-        versionCode 1
-        versionName "1.0.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField 'String', 'LOG_ROS', '"ros"'
+        buildConfigField 'String', 'LOG_POWER_BOARD', '"power_board_log"'
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -21,7 +20,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -34,8 +32,7 @@ task generateSourcesJar(type: Jar){
 }
 
 dependencies {
-    api 'com.jakewharton.timber:timber:5.0.1'
-    api 'com.elvishew:xlog:1.10.1'
+    implementation project(':reeman-log')
 }
 
 afterEvaluate {
@@ -43,7 +40,7 @@ afterEvaluate {
         publications {
             // Creates a Maven publication called "release".
             group = 'com.github.Misaka-XXXXII'
-            version = '1.0.3'
+            version = '1.0.0'
             //发布release版本
             release(MavenPublication) {
                 // Applies the component for the release build variant.
@@ -51,11 +48,10 @@ afterEvaluate {
                 //groupId通常是自己的gitee或者GitHub的账户地址
                 groupId = group
                 //artifactId通常是指待发布项目的名称，也就是别名
-                artifactId = 'mLog'
+                artifactId = 'serialport'
                 //version通常是指待发布项目的版本号，这里是写死的，通常我们取项目versionName
                 version = version
             }
         }
     }
 }
-
