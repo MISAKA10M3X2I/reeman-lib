@@ -58,6 +58,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="gone"
                 android:layout_margin="10dp"
                 android:background="@color/view_bg"
                 android:gravity="center"
@@ -67,6 +68,47 @@
                 android:textColor="@color/white"
                 android:textSize="20sp" />
 
+
+            <TextView
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:background="@color/view_bg"
+                android:gravity="center"
+                android:onClick="speedControl"
+                android:padding="10dp"
+                android:text="@string/text_speed_control"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:background="@color/view_bg"
+                android:gravity="center"
+                android:visibility="gone"
+                android:onClick="fixPointNavigation"
+                android:padding="10dp"
+                android:text="@string/text_fix_point_navigation"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:visibility="gone"
+                android:background="@color/view_bg"
+                android:gravity="center"
+                android:onClick="getRobotType"
+                android:padding="10dp"
+                android:text="@string/text_get_robot_type"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
 
             <TextView
                 android:layout_width="match_parent"

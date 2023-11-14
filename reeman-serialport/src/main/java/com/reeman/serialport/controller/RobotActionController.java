@@ -81,11 +81,12 @@ public class RobotActionController {
         if (path != null && path.length != 0) {
             pathList.addAll(Arrays.asList(path));
         }
-        if (Build.PRODUCT.startsWith("YF3568")) return;
-        try {
-            PowerBoardReceiver.getInstance().start();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (Build.PRODUCT.startsWith("rk312x")) {
+            try {
+                PowerBoardReceiver.getInstance().start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -101,7 +102,7 @@ public class RobotActionController {
 
     Runnable task = () -> {
         try {
-            if (TextUtils.isEmpty(ipAddress) || "127.0.0.1".equals(ipAddress) || !NetworkUtil.isHostReachable(ipAddress,1000) || pathList == null)
+            if (TextUtils.isEmpty(ipAddress) || "127.0.0.1".equals(ipAddress) || !NetworkUtil.isHostReachable(ipAddress, 1000) || pathList == null)
                 return;
             LogUtils.uploadLogs(ipAddress, pathList);
         } catch (Exception e) {

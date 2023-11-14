@@ -27,5 +27,8 @@
     <string name="text_clean">清空</string>
     <string name="text_not_connect">未连接</string>
     <string name="text_can_navgation">是否可以导航</string>
+    <string name="text_speed_control">速度控制</string>
+    <string name="text_fix_point_navigation">固定路径点导航</string>
+    <string name="text_get_robot_type">获取机器类型</string>
 
 </resources>

@@ -3,7 +3,9 @@ package com.reeman.lib;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +26,8 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     private TextView tvROSData, tvRefreshHostname, tvRefreshIP, tvCoreData;
     private RobotActionController controller;
     private String coreData = "";
+
+    private Handler handler = new Handler();
 
 
     @Override
@@ -81,14 +85,14 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
 
     public void refreshIP(View view) {
         tvRefreshIP.setText("");
-        tvRefreshIP.postDelayed(()->controller.getHostIp(),500);
+        tvRefreshIP.postDelayed(() -> controller.getHostIp(), 500);
     }
 
 
     public void canNavigation(View view) {
         controller.sendCommand("footprint[0.65,0.85]");
         controller.sendCommand("set_tolerance[0]");
-        tvROSData.postDelayed(()->controller.sendCommand("get_plan_name[A]"),1500);
+        tvROSData.postDelayed(() -> controller.sendCommand("get_plan_name[A]"), 1500);
     }
 
     public void navigationTOPointA(View view) {
@@ -101,6 +105,7 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     }
 
     public void exit(View view) {
+        controller.stopListen();
         finishAndRemoveTask();
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(0);
@@ -175,6 +180,25 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
                 } else {
                     Toast.makeText(this, "生成路线成功", Toast.LENGTH_SHORT).show();
                 }
+            } else if (result.startsWith("get_flag_point")) {
+                if (result.equals("get_flag_point:-1")) {
+                    if (sb.length() == 0) {
+                        Toast.makeText(this, "找不到路线点", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String path = sb.deleteCharAt(sb.length() - 1).toString();
+                    Toast.makeText(this, "path :" + path, Toast.LENGTH_SHORT).show();
+                    controller.sendCommand("list_point[" + path + "]");
+                } else {
+                    String replace = result.replace("get_flag_point[", "").replace("]", "");
+                    String[] split = replace.split(",");
+                    sb.append(split[0]).append(",")
+                            .append(split[1]).append(",")
+                            .append(split[2]).append(",");
+                    controller.sendCommand("nav:get_flag_point[" + (++point) + "]");
+                }
+            }else if (result.startsWith("robot_type:")){
+                    Toast.makeText(this, getRobotType(result), Toast.LENGTH_SHORT).show();
             }
             String data = tvROSData.getText().toString();
             if (data.length() > 500) {
@@ -188,49 +212,106 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
         });
     }
 
-        public String formatDay(Date date) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
-            return formatter.format(date);
+    public String formatDay(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
+        return formatter.format(date);
+    }
+
+
+    /**
+     * @param code -1,-2,-3,-4,-9:所有导航模式都有可能出现以上原因;
+     *             -5:只有AGV导航会出现该原因;
+     *             -6,-7,-8:固定路线模式可能会出现以上原因;
+     * @return
+     */
+    public String getStartNavFailedReason(int code) {
+        String reason = "";
+        switch (code) {
+            case -1:
+                reason = getString(R.string.text_start_navigation_failed_1);
+                break;
+            case -2:
+                reason = getString(R.string.text_start_navigation_failed_2);
+                break;
+            case -3:
+                reason = getString(R.string.text_start_navigation_failed_3);
+                break;
+            case -4:
+                reason = getString(R.string.text_start_navigation_failed_4);
+                break;
+            case -5:
+                reason = getString(R.string.text_start_navigation_failed_5);
+                break;
+            case -6:
+                reason = getString(R.string.text_start_navigation_failed_6);
+                break;
+            case -7:
+                reason = getString(R.string.text_start_navigation_failed_7);
+                break;
+            case -8:
+                reason = getString(R.string.text_start_navigation_failed_8);
+                break;
+            case -9:
+                reason = getString(R.string.text_start_navigation_failed_9);
+                break;
         }
+        return reason;
+    }
 
+    double speed = 0.1;
+    int count = 0;
 
-        /**
-         * @param code -1,-2,-3,-4,-9:所有导航模式都有可能出现以上原因;
-         *             -5:只有AGV导航会出现该原因;
-         *             -6,-7,-8:固定路线模式可能会出现以上原因;
-         * @return
-         */
-        public String getStartNavFailedReason(int code) {
-            String reason = "";
-            switch (code) {
-                case -1:
-                    reason = getString(R.string.text_start_navigation_failed_1);
-                    break;
-                case -2:
-                    reason = getString(R.string.text_start_navigation_failed_2);
-                    break;
-                case -3:
-                    reason = getString(R.string.text_start_navigation_failed_3);
-                    break;
-                case -4:
-                    reason = getString(R.string.text_start_navigation_failed_4);
-                    break;
-                case -5:
-                    reason = getString(R.string.text_start_navigation_failed_5);
-                    break;
-                case -6:
-                    reason = getString(R.string.text_start_navigation_failed_6);
-                    break;
-                case -7:
-                    reason = getString(R.string.text_start_navigation_failed_7);
-                    break;
-                case -8:
-                    reason = getString(R.string.text_start_navigation_failed_8);
-                    break;
-                case -9:
-                    reason = getString(R.string.text_start_navigation_failed_9);
-                    break;
+    public void speedControl(View view) {
+        count = 0;
+        speed = 0.1;
+        speedControlRunnable.run();
+    }
+
+    Runnable speedControlRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (++count > 20) {
+                count = 0;
+                speed = 0.1;
+                return;
             }
-            return reason;
+            if (speed < 0.5) {
+                speed = speed + 0.1;
+            }
+            controller.sendCommand("app_vel[" + speed + ",0.2]");
+            Log.w("=====", "app_vel[" + speed + ",0.2]");
+            handler.postDelayed(this, 100);
         }
+    };
+
+    StringBuilder sb;
+
+    int point = 1;
+
+    public void fixPointNavigation(View view) {
+        sb = new StringBuilder();
+        point = 1;
+        controller.sendCommand("nav:get_flag_point[" + point + "]");
+    }
+
+    public void getRobotType(View view) {
+        controller.sendCommand("robot_type");
+    }
+
+    private String getRobotType(String result){
+        if (result.endsWith("1")){
+            return "方形低盘";
+        } else if (result.endsWith("2")) {
+            return "送餐低盘";
+        } else if (result.endsWith("3")) {
+            return "消毒低盘";
+        } else if (result.endsWith("4")) {
+            return "AGV低盘";
+        } else if (result.endsWith("5")) {
+return "大狗低盘";
+        }else {
+            return "agv no qr底盘 "+result;
+        }
+    }
+
 }
