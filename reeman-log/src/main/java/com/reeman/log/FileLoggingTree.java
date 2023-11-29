@@ -7,6 +7,7 @@ import com.elvishew.xlog.flattener.ClassicFlattener;
 import com.elvishew.xlog.printer.AndroidPrinter;
 import com.elvishew.xlog.printer.Printer;
 import com.elvishew.xlog.printer.file.FilePrinter;
+import com.elvishew.xlog.printer.file.backup.FileSizeBackupStrategy2;
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy;
 
@@ -43,8 +44,8 @@ public class FileLoggingTree extends Timber.Tree {
         for (String path : pathList) {
             printerMap.put(path, new FilePrinter
                     .Builder(rootPath + File.separator + path)
-                    .fileNameGenerator(new LogFileName(false))
-                    .backupStrategy(new NeverBackupStrategy())
+                    .fileNameGenerator(new LogFileName())
+                    .backupStrategy(new FileSizeBackupStrategy2(1024 * 1024 * 5, 100))
                     .flattener(new ClassicFlattener())
                     .cleanStrategy(new FileLastModifiedCleanStrategy(7 * 24 * 60 * 60 * 1000))
                     .build());
@@ -83,9 +84,9 @@ public class FileLoggingTree extends Timber.Tree {
         } else {
             printers = new Printer[]{finalFilePrinter};
         }
-        if (t == null){
+        if (t == null) {
             XLog.tag(tag).printers(printers).log(priority, message);
-        }else {
+        } else {
             XLog.tag(tag).printers(printers).log(priority, message, t);
         }
     }

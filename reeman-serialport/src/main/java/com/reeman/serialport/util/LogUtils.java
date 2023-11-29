@@ -118,7 +118,7 @@ public class LogUtils {
     public static void copyFileUsingStreams(File sourceFile, File targetFile) throws IOException {
         try (FileInputStream fis = new FileInputStream(sourceFile);
              FileOutputStream fos = new FileOutputStream(targetFile)) {
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = fis.read(buffer)) != -1) {
                 fos.write(buffer, 0, bytesRead);
