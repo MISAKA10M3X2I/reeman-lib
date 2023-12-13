@@ -3,6 +3,7 @@ package com.reeman.lib;
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -12,10 +13,13 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.elvishew.xlog.XLog;
+import com.reeman.log.FileLoggingTree;
 import com.reeman.serialport.controller.RobotActionController;
 import com.reeman.serialport.controller.RosCallbackParser;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -26,9 +30,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     private TextView tvROSData, tvRefreshHostname, tvRefreshIP, tvCoreData;
     private RobotActionController controller;
     private String coreData = "";
-
-    private Handler handler = new Handler();
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +45,18 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     @Override
     protected void onResume() {
         super.onResume();
+        XLog.init();
+        Timber.plant(new FileLoggingTree(
+                        Log.VERBOSE,//打印的日志级别
+                        BuildConfig.DEBUG,//是否将日志打印到控制台
+                        Environment.getExternalStorageDirectory().getPath(),//日志根目录
+                        BuildConfig.APP_LOG_DIR,//默认tag
+                        Arrays.asList(BuildConfig.APP_LOG_DIR,//具体的日志类别
+                                com.reeman.serialport.BuildConfig.LOG_POWER_BOARD
+                        )
+                )
+        );
+        //初始化串口
         if (controller == null) {
             controller = RobotActionController.getInstance();
             try {
@@ -51,7 +64,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
                         115200,
                         ofChassis(Build.PRODUCT),
                         this,
-                        com.reeman.serialport.BuildConfig.LOG_ROS,
                         BuildConfig.APP_LOG_DIR
 
                 );
@@ -73,7 +85,7 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
             return "/dev/ttyS4";
         } else if ("rk3399_all".equals(product)) {
             return "/dev/ttyXRUSB0";
-        } else {
+        } else {//rk3128
             return "/dev/ttyS1";
         }
     }
@@ -88,13 +100,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
         tvRefreshIP.postDelayed(() -> controller.getHostIp(), 500);
     }
 
-
-    public void canNavigation(View view) {
-        controller.sendCommand("footprint[0.65,0.85]");
-        controller.sendCommand("set_tolerance[0]");
-        tvROSData.postDelayed(() -> controller.sendCommand("get_plan_name[A]"), 1500);
-    }
-
     public void navigationTOPointA(View view) {
         controller.navigationByPoint("A");
     }
@@ -105,6 +110,7 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     }
 
     public void exit(View view) {
+        //释放串口
         controller.stopListen();
         finishAndRemoveTask();
         android.os.Process.killProcess(android.os.Process.myPid());
@@ -174,31 +180,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
                     int charger = Integer.parseInt(split[4]);
                     tvCoreData.setText(getString(R.string.text_core_data, battery, button, charger));
                 }
-            } else if (result.startsWith("get_plan:")) {
-                if (result.equals("get_plan:error")) {
-                    Toast.makeText(this, "生成路线失败", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "生成路线成功", Toast.LENGTH_SHORT).show();
-                }
-            } else if (result.startsWith("get_flag_point")) {
-                if (result.equals("get_flag_point:-1")) {
-                    if (sb.length() == 0) {
-                        Toast.makeText(this, "找不到路线点", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    String path = sb.deleteCharAt(sb.length() - 1).toString();
-                    Toast.makeText(this, "path :" + path, Toast.LENGTH_SHORT).show();
-                    controller.sendCommand("list_point[" + path + "]");
-                } else {
-                    String replace = result.replace("get_flag_point[", "").replace("]", "");
-                    String[] split = replace.split(",");
-                    sb.append(split[0]).append(",")
-                            .append(split[1]).append(",")
-                            .append(split[2]).append(",");
-                    controller.sendCommand("nav:get_flag_point[" + (++point) + "]");
-                }
-            }else if (result.startsWith("robot_type:")){
-                    Toast.makeText(this, getRobotType(result), Toast.LENGTH_SHORT).show();
             }
             String data = tvROSData.getText().toString();
             if (data.length() > 500) {
@@ -256,62 +237,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
                 break;
         }
         return reason;
-    }
-
-    double speed = 0.1;
-    int count = 0;
-
-    public void speedControl(View view) {
-        count = 0;
-        speed = 0.1;
-        speedControlRunnable.run();
-    }
-
-    Runnable speedControlRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (++count > 20) {
-                count = 0;
-                speed = 0.1;
-                return;
-            }
-            if (speed < 0.5) {
-                speed = speed + 0.1;
-            }
-            controller.sendCommand("app_vel[" + speed + ",0.2]");
-            Log.w("=====", "app_vel[" + speed + ",0.2]");
-            handler.postDelayed(this, 100);
-        }
-    };
-
-    StringBuilder sb;
-
-    int point = 1;
-
-    public void fixPointNavigation(View view) {
-        sb = new StringBuilder();
-        point = 1;
-        controller.sendCommand("nav:get_flag_point[" + point + "]");
-    }
-
-    public void getRobotType(View view) {
-        controller.sendCommand("robot_type");
-    }
-
-    private String getRobotType(String result){
-        if (result.endsWith("1")){
-            return "方形低盘";
-        } else if (result.endsWith("2")) {
-            return "送餐低盘";
-        } else if (result.endsWith("3")) {
-            return "消毒低盘";
-        } else if (result.endsWith("4")) {
-            return "AGV低盘";
-        } else if (result.endsWith("5")) {
-return "大狗低盘";
-        }else {
-            return "agv no qr底盘 "+result;
-        }
     }
 
 }

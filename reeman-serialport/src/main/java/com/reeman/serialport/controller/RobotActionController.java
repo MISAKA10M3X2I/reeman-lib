@@ -22,17 +22,17 @@ public class RobotActionController {
 
     private static RobotActionController INSTANCE;
     private RosCallbackParser parser;
-    private String robotType = "delige";
     private String ipAddress;
     private List<String> pathList;
     private ScheduledExecutorService scheduledExecutorService;
 
+    /**
+     * 设置ROS ip地址,以将日志上传到ROS
+     *
+     * @param ipAddress
+     */
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
-    }
-
-    public void setRobotType(String robotType) {
-        this.robotType = robotType;
     }
 
     public static RobotActionController getInstance() {
@@ -47,6 +47,13 @@ public class RobotActionController {
     }
 
 
+    /**
+     * 默认的初始化串口方法,波特率:115200,串口地址:/dev/ttyS1
+     *
+     * @param callback ROS上报内容的回调
+     * @param path     要上传到ros的日志目录
+     * @throws Exception
+     */
     public void init(RosCallbackParser.RosCallback callback, String... path) throws Exception {
         parser = new RosCallbackParser.Builder()
                 .baudRate(115200)
@@ -56,12 +63,13 @@ public class RobotActionController {
         startListen(path);
     }
 
+
     /**
-     * 初始化串口数据,初始化日志工具
-     *
      * @param baudRate 波特率
-     * @param port     串口
-     * @param path     日志路径
+     * @param port     串口地址
+     * @param callback ROS上报内容的回调
+     * @param path     要上传到ros的日志目录
+     * @throws Exception
      */
     public void init(int baudRate, String port, RosCallbackParser.RosCallback callback, String... path) throws Exception {
         parser = new RosCallbackParser.Builder()
@@ -222,13 +230,7 @@ public class RobotActionController {
      * @param speed    线速度
      */
     public void expand(double x, double y, double z, String hostname, double speed) {
-        String c;
-        if ("delige".equals(robotType)) {
-            c = "robot_cost[" + x + "," + y + "," + z + "," + speed + "," + hostname + ((speed == 0.0f) ? ",0.035]" : ",0.04]");
-        } else {
-            c = "robot_cost[" + x + "," + y + "," + z + "," + (speed == 0.0f ? 0.5 : speed) + "," + hostname + ",0.006]";
-        }
-        sendCommand(c);
+        sendCommand("robot_cost[" + x + "," + y + "," + z + "," + (speed == 0.0f ? 0.5 : speed) + "," + hostname + ",0.006]");
     }
 
 
@@ -334,10 +336,6 @@ public class RobotActionController {
     public void sysReboot() {
         sendCommand("sys:reboot");
     }
-
-//    public void hostNameSet(String name) {
-//        sendCommand("hostname:set[" + name + "]");
-//    }
 
     /**
      * 激光数据上报控制
@@ -544,24 +542,6 @@ public class RobotActionController {
         sendCommand("nav_resume");
     }
 
-    public void navigationByPath(String path) {
-        sendCommand("route_name[" + path + "]");
-    }
-
-    public void pausePathNavigation() {
-        sendCommand("route[4]");
-    }
-
-
-    public void restartPathNavigation() {
-        sendCommand("route[1]");
-    }
-
-    public void resumePathNavigation() {
-        sendCommand("route[2]");
-    }
-
-
     /**
      * 获取点位坐标
      *
@@ -628,7 +608,7 @@ public class RobotActionController {
 
 
     /**
-     * 导航连接wifi
+     * ROS连接wifi
      *
      * @param wifiName     wifi名称
      * @param wifiPassword wifi密码
@@ -650,26 +630,6 @@ public class RobotActionController {
     }
 
     /**
-     * 紫外灯/喷雾开关
-     *
-     * @param open
-     */
-    public void generalPowerControl(boolean open) {
-        Timber.tag(BuildConfig.LOG_ROS).w("UV/喷雾%s", (open ? "开" : "关"));
-        sendToBase("208 16 2 " + (open ? 1 : 0) + " 103 101 110 101 114 97 108 95 112 111 119 101 114 0");
-    }
-
-    /**
-     * 人体检测开关
-     *
-     * @param open
-     */
-    public void humanDetectionControl(boolean open) {
-        Timber.tag(BuildConfig.LOG_ROS).w("人体检测%s", (open ? "开" : "关"));
-        sendToBase("208 2 3 " + (open ? 3 : 0));
-    }
-
-    /**
      * 发送透传指令到电源板
      *
      * @param data 数据位
@@ -683,8 +643,7 @@ public class RobotActionController {
             bytes[i] = (byte) data[i - 2];
         }
         String s = Parser.byteArrayToDecimalString(bytes);
-        if (!"208 2 164 1".equals(s))
-            Timber.tag(BuildConfig.LOG_ROS).v("透传 %s", s);
+        Timber.tag(BuildConfig.LOG_ROS).v("透传 %s", s);
         sendToBase(s);
     }
 

@@ -9,9 +9,4 @@ public class TimeUtil {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         return formatter.format(date);
     }
-
-    public static String formatHour(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH", Locale.getDefault());
-        return formatter.format(date);
-    }
 }
