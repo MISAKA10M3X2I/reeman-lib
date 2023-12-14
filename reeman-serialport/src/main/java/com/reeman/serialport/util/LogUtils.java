@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class LogUtils {
+
+    private static List<String> alreadyUploadFiles = new ArrayList<>();
 
     public static void uploadLogs(String ip, List<String> pathList) {
         Calendar now = Calendar.getInstance();
@@ -31,6 +34,7 @@ public class LogUtils {
             File[] files = root.listFiles();
             if (files == null) continue;
             for (File file : files) {
+                if (alreadyUploadFiles.contains(file.getAbsolutePath())) continue;
                 File tempFile = new File(
                         file.getAbsolutePath().replace(
                                 Environment.getExternalStorageDirectory().getAbsolutePath(),
@@ -87,10 +91,11 @@ public class LogUtils {
 
                     int resCode = conn.getResponseCode();
                     if (resCode == HttpURLConnection.HTTP_OK) {
-                       Log.w("日志", file.getAbsolutePath());
+                        Log.w("日志", file.getAbsolutePath());
+                        String formatDay = TimeUtil.formatDay(new Date());
                         if (file.getName().contains(" ")) {
                             String[] hs = file.getName().split(" ");
-                            if (!(hs[0] + ".log").equals(TimeUtil.formatDay(new Date()) + ".log")) {
+                            if (!(hs[0] + ".log").equals(formatDay + ".log")) {
                                 file.delete();
                             } else {
                                 int h = Integer.parseInt(file.getName().split(" ")[1].replace(".log", ""));
@@ -99,16 +104,20 @@ public class LogUtils {
                                 }
                             }
                         } else {
-                            if (!file.getName().startsWith(TimeUtil.formatDay(new Date())))
+                            if (!file.getName().startsWith(formatDay))
                                 file.delete();
+                            if (file.getName().startsWith(formatDay) && file.getName().contains(".bak") && !alreadyUploadFiles.contains(file.getAbsolutePath())) {
+                                alreadyUploadFiles.add(file.getAbsolutePath());
+                            }
+
                         }
                     } else {
-                        Timber.tag(BuildConfig.LOG_ROS).w("日志上传失败 %s %s",tempFile.getAbsolutePath(),conn.getResponseMessage());
+                        Timber.tag(BuildConfig.LOG_ROS).w("日志上传失败 %s %s", tempFile.getAbsolutePath(), conn.getResponseMessage());
                     }
                     conn.disconnect();
                 } catch (Exception e) {
-                    Timber.tag(BuildConfig.LOG_ROS).w(e,"日志上传失败 %s",tempFile.getAbsolutePath());
-                }finally {
+                    Timber.tag(BuildConfig.LOG_ROS).w(e, "日志上传失败 %s", tempFile.getAbsolutePath());
+                } finally {
                     tempFile.delete();
                 }
             }
