@@ -99,7 +99,7 @@ public class LogUtils {
                                 }
                             }
                         } else {
-                            if (!file.getName().equals(TimeUtil.formatDay(new Date()) + ".log"))
+                            if (!file.getName().startsWith(TimeUtil.formatDay(new Date())))
                                 file.delete();
                         }
                     } else {
