@@ -57,8 +57,11 @@ public class RosCallbackParser {
                         if (checkSum.equals(Parser.checkXor(dataHexSum))) {
                             String dataPackage = sb.substring(start, dataLastIndex) + checkSum;
                             if (dataPackage.startsWith("AA54")) {
-                                if (callback != null)
-                                    receiveLinkedQueue.offer(Parser.hexStringToString(sb.substring(startIndex + 2, dataLastIndex)));
+                                if (callback != null) {
+                                    String s = Parser.hexStringToString(sb.substring(startIndex + 2, dataLastIndex));
+                                    if (!receiveLinkedQueue.contains(s))
+                                        receiveLinkedQueue.offer(s);
+                                }
                             }
                             sb.delete(0, dataLastIndex + 2);
 

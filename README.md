@@ -20,8 +20,8 @@ pluginManagement {
 
 ````groovy
 dependencies {
-    implementation  'com.github.Misaka-XXXXII:reeman-lib:1.0.8'
-    implementation  'com.github.Misaka-XXXXII.reeman-lib:serialport:1.0.8'
+    implementation  'com.github.Misaka-XXXXII:reeman-lib:1.1.0'
+    implementation  'com.github.Misaka-XXXXII.reeman-lib:serialport:1.1.0'
 }
 ````
 
