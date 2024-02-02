@@ -7,6 +7,7 @@ import com.elvishew.xlog.flattener.ClassicFlattener;
 import com.elvishew.xlog.printer.AndroidPrinter;
 import com.elvishew.xlog.printer.Printer;
 import com.elvishew.xlog.printer.file.FilePrinter;
+import com.elvishew.xlog.printer.file.backup.BackupStrategy2;
 import com.elvishew.xlog.printer.file.backup.FileSizeBackupStrategy2;
 import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy;
@@ -45,7 +46,7 @@ public class FileLoggingTree extends Timber.Tree {
             printerMap.put(path, new FilePrinter
                     .Builder(rootPath + File.separator + path)
                     .fileNameGenerator(new LogFileName())
-                    .backupStrategy(new FileSizeBackupStrategy2(1024 * 1024 * 5, 100))
+                    .backupStrategy(new FileSizeBackupStrategy2(1024 * 1024 * 5, BackupStrategy2.NO_LIMIT))
                     .flattener(new ClassicFlattener())
                     .cleanStrategy(new FileLastModifiedCleanStrategy(7 * 24 * 60 * 60 * 1000))
                     .build());
