@@ -91,7 +91,13 @@ public class RobotActionController {
         }
         if (Build.PRODUCT.startsWith("rk312x")) {
             try {
-                PowerBoardReceiver.getInstance().start();
+                PowerBoardReceiver.getInstance().start("/dev/ttyS0");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if (Build.PRODUCT.startsWith("rk3399_all")) {
+            try {
+                PowerBoardReceiver.getInstance().start("/dev/ttyS4");
             } catch (Exception e) {
                 e.printStackTrace();
             }

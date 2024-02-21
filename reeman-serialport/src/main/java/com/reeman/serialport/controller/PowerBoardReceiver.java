@@ -37,8 +37,8 @@ public class PowerBoardReceiver {
         }
     }
 
-    public void start() throws Exception {
-        parser = new SerialPortParser(new File("/dev/ttyS0"), 115200, this::writeToLocal);
+    public void start(String port) throws Exception {
+        parser = new SerialPortParser(new File(port), 115200, this::writeToLocal);
         parser.start();
     }
 
