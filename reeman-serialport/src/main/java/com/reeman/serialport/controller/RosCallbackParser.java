@@ -67,14 +67,23 @@ public class RosCallbackParser {
 
                         } else if (matcher.find()) {
                             Timber.tag(BuildConfig.LOG_ROS).w("导航数据包校验不通过1%s", sb);
+                            if (callback != null){
+                                callback.onDataVerifyFailed(-1,new String(sb));
+                            }
                             sb.delete(0, matcher.start());
                         } else {
                             Timber.tag(BuildConfig.LOG_ROS).w("导航数据包校验不通过2%s", sb);
+                            if (callback != null){
+                                callback.onDataVerifyFailed(-2,new String(sb));
+                            }
                             sb.delete(0, sb.length());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                         Timber.tag(BuildConfig.LOG_ROS).w(e, "解析出错%s", sb);
+                        if (callback != null){
+                            callback.onDataVerifyFailed(-3,new String(sb));
+                        }
                         sb.delete(0, sb.length());
                     }
                 } else {
@@ -139,6 +148,8 @@ public class RosCallbackParser {
 
     public interface RosCallback {
         void onResult(String result);
+
+        default void onDataVerifyFailed(int errorCode,String data){}
     }
 
     Runnable sendRunnable = new Runnable() {
