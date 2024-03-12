@@ -41,8 +41,8 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            group = 'com.github.Misaka-XXXXII'
-            version = '1.0.8'
+            group = 'com.github.MISAKA10M3X2I'
+            version = '1.2.0'
             release(MavenPublication) {
                 from components.release
                 groupId = group
