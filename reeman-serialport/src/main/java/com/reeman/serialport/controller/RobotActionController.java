@@ -89,18 +89,19 @@ public class RobotActionController {
         if (path != null && path.length != 0) {
             pathList.addAll(Arrays.asList(path));
         }
+        String powerBoardPort = null;
         if (Build.PRODUCT.startsWith("rk312x")) {
-            try {
-                PowerBoardReceiver.getInstance().start("/dev/ttyS0");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            powerBoardPort = "/dev/ttyS0";
         } else if (Build.PRODUCT.startsWith("rk3399_all")) {
-            try {
-                PowerBoardReceiver.getInstance().start("/dev/ttyS4");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            powerBoardPort = "/dev/ttyS4";
+        } else if (Build.PRODUCT.startsWith("YF3568_XXXE")) {
+            powerBoardPort = "/dev/ttyS3";
+        }
+        if (powerBoardPort == null) return;
+        try {
+            PowerBoardReceiver.getInstance().start(powerBoardPort);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -136,11 +137,6 @@ public class RobotActionController {
         parser.sendCommand(command);
         if (!command.startsWith("keep") && !command.startsWith("send_to_base") && !command.startsWith("get_battery_info"))
             Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
-    }
-
-    public void sendCommandToQueue(String command) {
-        parser.sendCommandToQueue(command);
-        Timber.tag(BuildConfig.LOG_ROS).v("send2 %s", command);
     }
 
     /**

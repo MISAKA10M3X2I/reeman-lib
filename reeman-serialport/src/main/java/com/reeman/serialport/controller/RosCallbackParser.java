@@ -19,7 +19,7 @@ public class RosCallbackParser {
     private final String port;
     private final int baudRate;
     private final RosCallback callback;
-    private final Pattern pattern = Pattern.compile("AA(54|56)");
+    private final Pattern pattern = Pattern.compile("AA54");
     private final StringBuilder sb = new StringBuilder();
     private SerialPortParser parser;
     private final ConcurrentLinkedQueue<String> receiveLinkedQueue = new ConcurrentLinkedQueue<>();
@@ -110,14 +110,6 @@ public class RosCallbackParser {
     }
 
     public void sendCommand(String cmd) {
-        try {
-            parser.sendCommand(Parser.string2BH(cmd));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sendCommandToQueue(String cmd) {
         sendLinkedQueue.offer(cmd);
     }
 
