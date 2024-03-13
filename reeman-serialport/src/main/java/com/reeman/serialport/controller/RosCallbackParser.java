@@ -109,7 +109,15 @@ public class RosCallbackParser {
         }
     }
 
-    public void sendCommand(String cmd) {
+    private void sendCommand(String cmd) {
+        try {
+            parser.sendCommand(Parser.string2BH(cmd));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendTOQueue(String cmd) {
         sendLinkedQueue.offer(cmd);
     }
 

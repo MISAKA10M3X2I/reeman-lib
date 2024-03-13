@@ -134,7 +134,7 @@ public class RobotActionController {
      * @see com.reeman.serialport.controller.RosCallbackParser.RosCallback#(String)
      */
     public void sendCommand(String command) {
-        parser.sendCommand(command);
+        parser.sendTOQueue(command);
         if (!command.startsWith("keep") && !command.startsWith("send_to_base") && !command.startsWith("get_battery_info"))
             Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
     }
