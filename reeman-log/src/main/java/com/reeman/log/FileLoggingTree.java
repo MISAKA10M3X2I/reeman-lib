@@ -28,7 +28,6 @@ public class FileLoggingTree extends Timber.Tree {
 
     private final int logLevel;
 
-    private final boolean withAndroidPrinter;
     private final Map<String, Printer> printerMap = new HashMap<>();
 
     private final Printer androidPrinter = new AndroidPrinter(true);
@@ -38,10 +37,9 @@ public class FileLoggingTree extends Timber.Tree {
     private Set<String> blackedMessages;
 
 
-    public FileLoggingTree(int priority, boolean withAndroidPrinter, String rootPath, String tag, List<String> pathList) {
+    public FileLoggingTree(int priority,  String rootPath, String tag, List<String> pathList) {
         this.logLevel = priority;
         this.defaultTAG = tag;
-        this.withAndroidPrinter = withAndroidPrinter;
         for (String path : pathList) {
             printerMap.put(path, new FilePrinter
                     .Builder(rootPath + File.separator + path)
@@ -53,10 +51,9 @@ public class FileLoggingTree extends Timber.Tree {
         }
     }
 
-    public FileLoggingTree(int priority, boolean withAndroidPrinter, String tag, Map<String, Printer> printerMap) {
+    public FileLoggingTree(int priority, String tag, Map<String, Printer> printerMap) {
         this.logLevel = priority;
         this.defaultTAG = tag;
-        this.withAndroidPrinter = withAndroidPrinter;
         this.printerMap.putAll(printerMap);
 
     }
@@ -80,7 +77,7 @@ public class FileLoggingTree extends Timber.Tree {
         if (!shouldLog(tag, message)) return;
         Printer finalFilePrinter = printerMap.get(printerMap.containsKey(tag) ? tag : defaultTAG);
         Printer[] printers;
-        if (withAndroidPrinter) {
+        if (tag.equals(defaultTAG)) {
             printers = new Printer[]{androidPrinter, finalFilePrinter};
         } else {
             printers = new Printer[]{finalFilePrinter};

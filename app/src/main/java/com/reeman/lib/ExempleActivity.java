@@ -48,7 +48,6 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
         XLog.init();
         Timber.plant(new FileLoggingTree(
                         Log.VERBOSE,//打印的日志级别
-                        BuildConfig.DEBUG,//是否将日志打印到控制台
                         Environment.getExternalStorageDirectory().getPath(),//日志根目录
                         BuildConfig.APP_LOG_DIR,//默认tag
                         Arrays.asList(BuildConfig.APP_LOG_DIR,//具体的日志类别

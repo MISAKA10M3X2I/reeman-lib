@@ -94,4 +94,12 @@ public class Parser {
         return sb.toString();
     }
 
+    public static String bytesToASCII(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append((char) b);
+        }
+        return sb.toString();
+    }
+
 }
