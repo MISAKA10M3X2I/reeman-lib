@@ -33,6 +33,6 @@ public class PowerBoardReceiver {
     }
 
     private void writeToLocal(byte[] data, int len) {
-        Timber.tag(BuildConfig.LOG_POWER_BOARD).w(Parser.bytesToASCII(data));
+        Timber.tag(BuildConfig.LOG_POWER_BOARD).w(Parser.bytesToASCII(data,len));
     }
 }

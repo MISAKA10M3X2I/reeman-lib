@@ -36,20 +36,29 @@ public class FileLoggingTree extends Timber.Tree {
 
     private Set<String> blackedMessages;
 
+    private final StringBuilder sb = new StringBuilder();
 
-    public FileLoggingTree(int priority,  String rootPath, String tag, List<String> pathList) {
+
+    public FileLoggingTree(int priority, String rootPath, String tag, List<String> pathList) {
         this.logLevel = priority;
         this.defaultTAG = tag;
         for (String path : pathList) {
-            printerMap.put(path, new FilePrinter
+            FilePrinter.Builder builder = new FilePrinter
                     .Builder(rootPath + File.separator + path)
                     .fileNameGenerator(new LogFileName())
                     .backupStrategy(new FileSizeBackupStrategy2(1024 * 1024 * 5, BackupStrategy2.NO_LIMIT))
                     .flattener(new ClassicFlattener())
-                    .cleanStrategy(new FileLastModifiedCleanStrategy(7 * 24 * 60 * 60 * 1000))
-                    .build());
+                    .cleanStrategy(new FileLastModifiedCleanStrategy(7 * 24 * 60 * 60 * 1000));
+            if (path.equals("power_board_log")) {
+                builder.flattener(new CustomFlattener("{m}"));
+            } else {
+                builder.flattener(new ClassicFlattener());
+            }
+            printerMap.put(path, builder.build());
+
         }
     }
+
 
     public FileLoggingTree(int priority, String tag, Map<String, Printer> printerMap) {
         this.logLevel = priority;
@@ -83,7 +92,20 @@ public class FileLoggingTree extends Timber.Tree {
             printers = new Printer[]{finalFilePrinter};
         }
         if (t == null) {
-            XLog.tag(tag).printers(printers).log(priority, message);
+            if (tag.equals("power_board_log")) {
+                try {
+                    String s = sb.append(message).toString();
+                    if (s.contains("\n")) {
+                        String substring = s.substring(0, s.indexOf("\n"));
+                        XLog.tag(tag).printers(printers).log(priority, substring);
+                        sb.delete(0, substring.length() + 1);
+                    }
+                } catch (Exception e) {
+
+                }
+            } else {
+                XLog.tag(tag).printers(printers).log(priority, message);
+            }
         } else {
             XLog.tag(tag).printers(printers).log(priority, message, t);
         }

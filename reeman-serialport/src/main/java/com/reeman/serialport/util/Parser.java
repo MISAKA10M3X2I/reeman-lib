@@ -94,10 +94,10 @@ public class Parser {
         return sb.toString();
     }
 
-    public static String bytesToASCII(byte[] bytes) {
+    public static String bytesToASCII(byte[] bytes,int len) {
         StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append((char) b);
+        for (int i = 0; i < len; i++) {
+            sb.append((char) bytes[i]);
         }
         return sb.toString();
     }
