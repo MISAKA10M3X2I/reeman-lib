@@ -6,11 +6,14 @@ import com.reeman.serialport.util.Parser;
 
 import java.io.File;
 
+import kotlin.jvm.Synchronized;
 import timber.log.Timber;
 
 public class PowerBoardReceiver {
     private static PowerBoardReceiver INSTANCE;
     private SerialPortParser parser;
+
+    private final StringBuilder sb = new StringBuilder();
 
     public static PowerBoardReceiver getInstance() {
         if (INSTANCE == null) {
@@ -32,7 +35,14 @@ public class PowerBoardReceiver {
         INSTANCE = null;
     }
 
-    private void writeToLocal(byte[] data, int len) {
-        Timber.tag(BuildConfig.LOG_POWER_BOARD).w(Parser.bytesToASCII(data,len));
+    private synchronized void writeToLocal(byte[] data, int len) {
+        String message = Parser.bytesToASCII(data, len);
+        sb.append(message);
+        String msg = sb.toString();
+        int index = msg.lastIndexOf("\n");
+        if (index > 0) {
+            Timber.tag(BuildConfig.LOG_POWER_BOARD).w(msg.substring(0, index - 1));
+            sb.delete(0, index + 1);
+        }
     }
 }
