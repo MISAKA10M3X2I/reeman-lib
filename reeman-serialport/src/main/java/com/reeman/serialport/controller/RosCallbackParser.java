@@ -6,6 +6,7 @@ import com.reeman.serialport.BuildConfig;
 import com.reeman.serialport.util.Parser;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -113,6 +114,14 @@ public class RosCallbackParser {
         try {
             parser.sendCommand(Parser.string2BH(cmd));
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendCommand(byte[] bytes){
+        try {
+            parser.sendCommand(bytes);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

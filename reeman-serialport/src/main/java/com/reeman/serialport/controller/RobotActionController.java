@@ -139,6 +139,10 @@ public class RobotActionController {
             Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
     }
 
+    public void sendCommand(byte[] bytes){
+        parser.sendCommand(bytes);
+    }
+
     /**
      * 控制临时停靠开关
      *
