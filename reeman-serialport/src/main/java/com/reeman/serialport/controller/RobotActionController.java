@@ -60,7 +60,7 @@ public class RobotActionController {
                 .port("/dev/ttyS1")
                 .callback(callback)
                 .build();
-        startListen(path);
+        startListen(true,path);
     }
 
 
@@ -72,16 +72,20 @@ public class RobotActionController {
      * @throws Exception
      */
     public void init(int baudRate, String port, RosCallbackParser.RosCallback callback, String... path) throws Exception {
+        init(baudRate, port, true, callback, path);
+    }
+
+    public void init(int baudRate, String port, boolean recordMCULog, RosCallbackParser.RosCallback callback, String... path) throws Exception {
         parser = new RosCallbackParser.Builder()
                 .baudRate(baudRate)
                 .port(port)
                 .callback(callback)
                 .build();
         Timber.tag(BuildConfig.LOG_ROS).d("baudRate: " + baudRate + ",port: " + port);
-        startListen(path);
+        startListen(recordMCULog, path);
     }
 
-    private void startListen(String... path) throws Exception {
+    private void startListen(boolean recordMCULog, String... path) throws Exception {
         parser.startListen();
         scheduledExecutorService = Executors.newScheduledThreadPool(1);
         scheduledExecutorService.scheduleWithFixedDelay(task, 10, 60, TimeUnit.SECONDS);
@@ -89,19 +93,21 @@ public class RobotActionController {
         if (path != null && path.length != 0) {
             pathList.addAll(Arrays.asList(path));
         }
-        String powerBoardPort = null;
-        if (Build.PRODUCT.startsWith("rk312x")) {
-            powerBoardPort = "/dev/ttyS0";
-        } else if (Build.PRODUCT.startsWith("rk3399_all")) {
-            powerBoardPort = "/dev/ttyS4";
-        } else if (Build.PRODUCT.startsWith("YF3568_XXXE")) {
-            powerBoardPort = "/dev/ttyS3";
-        }
-        if (powerBoardPort == null) return;
-        try {
-            PowerBoardReceiver.getInstance().start(powerBoardPort);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (recordMCULog) {
+            String powerBoardPort = null;
+            if (Build.PRODUCT.startsWith("rk312x")) {
+                powerBoardPort = "/dev/ttyS2";
+            } else if (Build.PRODUCT.startsWith("rk3399_all")) {
+                powerBoardPort = "/dev/ttyS4";
+            } else if (Build.PRODUCT.startsWith("YF3568_XXXE")) {
+                powerBoardPort = "/dev/ttyS3";
+            }
+            if (powerBoardPort == null) return;
+            try {
+                PowerBoardReceiver.getInstance().start(powerBoardPort);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -139,7 +145,7 @@ public class RobotActionController {
             Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
     }
 
-    public void sendCommand(byte[] bytes){
+    public void sendCommand(byte[] bytes) {
         parser.sendCommand(bytes);
     }
 
