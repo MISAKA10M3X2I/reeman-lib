@@ -42,7 +42,7 @@ afterEvaluate {
     publishing {
         publications {
             group = 'com.github.MISAKA10M3X2I'
-            version = '1.2.7'
+            version = '1.2.8'
             release(MavenPublication) {
                 from components.release
                 groupId = group

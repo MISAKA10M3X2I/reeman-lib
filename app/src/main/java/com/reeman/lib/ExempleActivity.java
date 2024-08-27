@@ -46,15 +46,15 @@ public class ExempleActivity extends Activity implements RosCallbackParser.RosCa
     protected void onResume() {
         super.onResume();
         XLog.init();
-        Timber.plant(new FileLoggingTree(
-                        Log.VERBOSE,//打印的日志级别
-                        Environment.getExternalStorageDirectory().getPath(),//日志根目录
-                        BuildConfig.APP_LOG_DIR,//默认tag
-                        Arrays.asList(BuildConfig.APP_LOG_DIR,//具体的日志类别
-                                com.reeman.serialport.BuildConfig.LOG_POWER_BOARD
-                        )
-                )
-        );
+//        Timber.plant(new FileLoggingTree(
+//                        Log.VERBOSE,//打印的日志级别
+//                        Environment.getExternalStorageDirectory().getPath(),//日志根目录
+//                        BuildConfig.APP_LOG_DIR,//默认tag
+//                        Arrays.asList(BuildConfig.APP_LOG_DIR,//具体的日志类别
+//                                com.reeman.serialport.BuildConfig.LOG_POWER_BOARD
+//                        )
+//                )
+//        );
         //初始化串口
         if (controller == null) {
             controller = RobotActionController.getInstance();

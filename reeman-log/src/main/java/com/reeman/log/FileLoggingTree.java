@@ -9,7 +9,6 @@ import com.elvishew.xlog.printer.Printer;
 import com.elvishew.xlog.printer.file.FilePrinter;
 import com.elvishew.xlog.printer.file.backup.BackupStrategy2;
 import com.elvishew.xlog.printer.file.backup.FileSizeBackupStrategy2;
-import com.elvishew.xlog.printer.file.backup.NeverBackupStrategy;
 import com.elvishew.xlog.printer.file.clean.FileLastModifiedCleanStrategy;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,10 +35,13 @@ public class FileLoggingTree extends Timber.Tree {
 
     private Set<String> blackedMessages;
 
+    private boolean withAndroidPrinter = false;
 
-    public FileLoggingTree(int priority, String rootPath, String tag, List<String> pathList) {
+
+    public FileLoggingTree(int priority, String rootPath, String tag, boolean withAndroidPrinter,List<String> pathList) {
         this.logLevel = priority;
         this.defaultTAG = tag;
+        this.withAndroidPrinter = withAndroidPrinter;
         for (String path : pathList) {
             FilePrinter.Builder builder = new FilePrinter
                     .Builder(rootPath + File.separator + path)
@@ -83,7 +85,7 @@ public class FileLoggingTree extends Timber.Tree {
         if (!shouldLog(tag, message)) return;
         Printer finalFilePrinter = printerMap.get(printerMap.containsKey(tag) ? tag : defaultTAG);
         Printer[] printers;
-        if (tag.equals(defaultTAG)) {
+        if (withAndroidPrinter) {
             printers = new Printer[]{androidPrinter, finalFilePrinter};
         } else {
             printers = new Printer[]{finalFilePrinter};

@@ -140,13 +140,17 @@ public class RobotActionController {
      * @see com.reeman.serialport.controller.RosCallbackParser.RosCallback#(String)
      */
     public void sendCommand(String command) {
-        parser.sendTOQueue(command);
-        if (!command.startsWith("keep") && !command.startsWith("send_to_base") && !command.startsWith("get_battery_info"))
-            Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
+        if (parser != null) {
+            parser.sendTOQueue(command);
+            if (!command.startsWith("keep") && !command.startsWith("send_to_base") && !command.startsWith("get_battery_info"))
+                Timber.tag(BuildConfig.LOG_ROS).v("send %s", command);
+        }
     }
 
     public void sendCommand(byte[] bytes) {
-        parser.sendCommand(bytes);
+        if (parser!= null) {
+            parser.sendCommand(bytes);
+        }
     }
 
     /**
